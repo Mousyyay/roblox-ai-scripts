@@ -1,140 +1,68 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>Roblox AI Chat</title>
-
-<style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#1e1e1e;
-  color:white;
-}
-
-#sidebar{
-  width:220px;
-  height:100vh;
-  background:#111;
-  float:left;
-  padding:10px;
-}
-
-#chatArea{
-  margin-left:220px;
-  padding:20px;
-}
-
-.chatItem{
-  padding:8px;
-  background:#333;
-  margin:5px 0;
-  cursor:pointer;
-}
-
-#messages{
-  height:70vh;
-  overflow:auto;
-  background:#2a2a2a;
-  padding:10px;
-}
-
-input{
-  width:80%;
-  padding:10px;
-}
-
-button{
-  padding:10px;
-}
-</style>
-
-</head>
-
-<body>
-
-<div id="sidebar">
-<h3>Chats</h3>
-
-<button onclick="newChat()">+ New Chat</button>
-
-<div id="chatList"></div>
-
-</div>
-
-<div id="chatArea">
-
-<h2>Roblox AI Script Chat</h2>
-
-<div id="messages"></div>
-
-<br>
-
-<input id="userInput" placeholder="Ask for a Roblox script...">
-<button onclick="sendMessage()">Send</button>
-
-</div>
-
 <script>
 
 let chats = JSON.parse(localStorage.getItem("chats")) || [];
 let currentChat = null;
 
 function saveChats(){
-  localStorage.setItem("chats",JSON.stringify(chats));
+  localStorage.setItem("chats", JSON.stringify(chats));
 }
 
 function renderChats(){
-  const list=document.getElementById("chatList");
-  list.innerHTML="";
+  const list = document.getElementById("chatList");
+  list.innerHTML = "";
   
-  chats.forEach((chat,i)=>{
-    const div=document.createElement("div");
-    div.className="chatItem";
-    div.innerText="Chat "+(i+1);
-    div.onclick=()=>openChat(i);
+  chats.forEach((chat, i) => {
+    const div = document.createElement("div");
+    div.className = "chatItem";
+    div.innerText = "Chat " + (i + 1);
+    div.onclick = () => openChat(i);
     list.appendChild(div);
   });
 }
 
 function newChat(){
-  const chat={messages:[]};
+  const chat = {messages: []};
   chats.push(chat);
-  currentChat=chat;
+  currentChat = chat;
   saveChats();
   renderChats();
   renderMessages();
 }
 
 function openChat(i){
-  currentChat=chats[i];
+  currentChat = chats[i];
   renderMessages();
 }
 
 function renderMessages(){
-  const box=document.getElementById("messages");
-  box.innerHTML="";
+  const box = document.getElementById("messages");
+  box.innerHTML = "";
   
-  if(!currentChat)return;
+  if(!currentChat) return;
   
-  currentChat.messages.forEach(m=>{
-    const p=document.createElement("p");
-    p.innerText=m;
+  currentChat.messages.forEach(m => {
+    const p = document.createElement("p");
+    p.innerText = m;
     box.appendChild(p);
   });
 }
 
 function sendMessage(){
-  const input=document.getElementById("userInput");
-  const text=input.value.trim();
-  
-  if(!text||!currentChat)return;
-  
-  currentChat.messages.push("You: "+text);
-  
+  const input = document.getElementById("userInput");
+  const text = input.value.trim();
+
+  if(!text) return;
+
+  // automatically create a chat if none exists
+  if(!currentChat){
+    newChat();
+  }
+
+  currentChat.messages.push("You: " + text);
   currentChat.messages.push("AI: Generating script...");
-  
-  input.value="";
-  
+
+  input.value = "";
+
   saveChats();
   renderMessages();
 }
@@ -142,6 +70,3 @@ function sendMessage(){
 renderChats();
 
 </script>
-
-</body>
-</html>

@@ -19,7 +19,7 @@ const GEMINI3_MODELS = new Set([
     'gemini-3.1-flash-lite-preview'
 ]);
 
-const GEMINI25_THINKING_MODELS = new Set([
+const GEMINI25_THINKING = new Set([
     'gemini-2.5-pro',
     'gemini-2.5-flash'
 ]);
@@ -34,14 +34,14 @@ const state = {
     settings:   JSON.parse(localStorage.getItem('mousy_settings') || 'null') || {
         systemPrompt: "You are Mousy's AI, a helpful and precise assistant. Format code in markdown code blocks with the language name.",
         textEffect: 'fade-in',
-        fontSize: 'md',
-        theme: 'dark'
+        fontSize:   'md',
+        theme:      'dark'
     },
-    geminiKey:  localStorage.getItem('mousy_gemini_key') || '',
-    orKey:      localStorage.getItem('mousy_or_key') || '',
-    sending:    false,
+    geminiKey:    localStorage.getItem('mousy_gemini_key') || '',
+    orKey:        localStorage.getItem('mousy_or_key') || '',
+    sending:      false,
     pendingImages: [],
-    searchQuery: ''
+    searchQuery:  ''
 };
 
 const el = {
@@ -76,9 +76,8 @@ const el = {
     themeLabel:          document.getElementById('themeLabel'),
     chatSearch:          document.getElementById('chatSearch'),
     searchClear:         document.getElementById('searchClear'),
-    textEffectSelect:    document.getElementById('textEffectSelect'),
-    fontSizeSelect:      document.getElementById('fontSizeSelect'),
-    saveAppearanceBtn:   document.getElementById('saveAppearanceBtn'),
+    effectPills:         document.getElementById('effectPills'),
+    sizePills:           document.getElementById('sizePills'),
     chatModal:           document.getElementById('chatModal'),
     modalTitle:          document.getElementById('modalTitle'),
     modalInput:          document.getElementById('modalInput'),
@@ -88,15 +87,18 @@ const el = {
 
 function init() {
     lucide.createIcons();
+
     el.systemPromptInput.value = state.settings.systemPrompt;
     el.geminiKeyInput.value    = state.geminiKey;
     el.orKeyInput.value        = state.orKey;
-    el.textEffectSelect.value  = state.settings.textEffect || 'fade-in';
-    el.fontSizeSelect.value    = state.settings.fontSize || 'md';
+
     updateKeyBadge();
     updateOrKeyBadge();
+
     applyTheme(state.settings.theme || 'dark', false);
     applyFontSize(state.settings.fontSize || 'md');
+    syncPills(el.effectPills, state.settings.textEffect || 'fade-in');
+    syncPills(el.sizePills, state.settings.fontSize || 'md');
 
     if (state.chats.length > 0) {
         switchChat(state.chats[0].id);
@@ -117,12 +119,10 @@ function bindEvents() {
     el.chatInput.addEventListener('keydown', e => {
         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
     });
-
     el.chatInput.addEventListener('input', () => {
         el.chatInput.style.height = 'auto';
         el.chatInput.style.height = Math.min(el.chatInput.scrollHeight, 160) + 'px';
     });
-
     el.chatInput.addEventListener('paste', e => {
         const items = e.clipboardData?.items;
         if (!items) return;
@@ -141,12 +141,11 @@ function bindEvents() {
     });
 
     el.saveGeminiKeyBtn.addEventListener('click', saveGeminiKey);
-    el.saveSystemPromptBtn.addEventListener('click', saveSystemPrompt);
     el.saveOrKeyBtn.addEventListener('click', saveOrKey);
-    el.saveAppearanceBtn.addEventListener('click', saveAppearance);
+    el.saveSystemPromptBtn.addEventListener('click', saveSystemPrompt);
 
-    el.toggleGeminiKeyBtn.addEventListener('click', () => togglePasswordField(el.geminiKeyInput, el.toggleGeminiKeyBtn));
-    el.toggleOrKeyBtn.addEventListener('click', () => togglePasswordField(el.orKeyInput, el.toggleOrKeyBtn));
+    el.toggleGeminiKeyBtn.addEventListener('click', () => togglePwField(el.geminiKeyInput, el.toggleGeminiKeyBtn));
+    el.toggleOrKeyBtn.addEventListener('click',     () => togglePwField(el.orKeyInput, el.toggleOrKeyBtn));
 
     el.imageInput.addEventListener('change', () => {
         Array.from(el.imageInput.files).forEach(addPendingImage);
@@ -161,8 +160,7 @@ function bindEvents() {
     });
 
     el.themeToggle.addEventListener('click', () => {
-        const next = state.settings.theme === 'dark' ? 'light' : 'dark';
-        applyTheme(next, true);
+        applyTheme(state.settings.theme === 'dark' ? 'light' : 'dark', true);
     });
 
     el.chatSearch.addEventListener('input', () => {
@@ -170,7 +168,6 @@ function bindEvents() {
         el.searchClear.style.display = state.searchQuery ? 'flex' : 'none';
         renderHistory();
     });
-
     el.searchClear.addEventListener('click', () => {
         el.chatSearch.value = '';
         state.searchQuery = '';
@@ -185,9 +182,35 @@ function bindEvents() {
 
     el.modalCancel.addEventListener('click', closeModal);
     el.chatModal.addEventListener('click', e => { if (e.target === el.chatModal) closeModal(); });
+
+    bindPillGroup(el.effectPills, val => {
+        state.settings.textEffect = val;
+        saveSettings();
+    });
+    bindPillGroup(el.sizePills, val => {
+        state.settings.fontSize = val;
+        applyFontSize(val);
+        saveSettings();
+    });
 }
 
-function togglePasswordField(input, btn) {
+function bindPillGroup(container, onChange) {
+    container.querySelectorAll('.pill-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+            container.querySelectorAll('.pill-option').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            onChange(btn.dataset.value);
+        });
+    });
+}
+
+function syncPills(container, activeVal) {
+    container.querySelectorAll('.pill-option').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.value === activeVal);
+    });
+}
+
+function togglePwField(input, btn) {
     const show = input.type === 'password';
     input.type = show ? 'text' : 'password';
     btn.innerHTML = show ? '<i data-lucide="eye-off"></i>' : '<i data-lucide="eye"></i>';
@@ -196,33 +219,31 @@ function togglePasswordField(input, btn) {
 
 function applyTheme(theme, animate) {
     state.settings.theme = theme;
+
     if (animate) {
         document.body.classList.add('theme-transitioning');
-        setTimeout(() => document.body.classList.remove('theme-transitioning'), 500);
+        setTimeout(() => document.body.classList.remove('theme-transitioning'), 400);
     }
+
     document.documentElement.setAttribute('data-theme', theme);
-    el.themeLabel.textContent = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
-    el.themeToggle.querySelector('i').setAttribute('data-lucide', theme === 'dark' ? 'sun' : 'moon');
+
+    const isDark = theme === 'dark';
+    el.themeLabel.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+    const icon = el.themeToggle.querySelector('i');
+    if (icon) { icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon'); }
     lucide.createIcons();
+
     saveSettings();
 }
 
 function applyFontSize(size) {
-    const map = { sm: '0.82rem', md: '0.93rem', lg: '1.05rem', xl: '1.15rem' };
+    const map = { sm: '0.82rem', md: '0.93rem', lg: '1.05rem', xl: '1.18rem' };
     document.documentElement.style.setProperty('--msg-font-size', map[size] || '0.93rem');
-}
-
-function saveAppearance() {
-    state.settings.textEffect = el.textEffectSelect.value;
-    state.settings.fontSize   = el.fontSizeSelect.value;
-    applyFontSize(state.settings.fontSize);
-    saveSettings();
-    showToast('Appearance saved.', 'success');
 }
 
 function addPendingImage(file) {
     if (!file.type.startsWith('image/')) { showToast('Only images are supported.', 'error'); return; }
-    if (file.size > 10 * 1024 * 1024)   { showToast('Image must be under 10MB.', 'error'); return; }
+    if (file.size > 10 * 1024 * 1024)   { showToast('Image must be under 10 MB.', 'error'); return; }
     const reader = new FileReader();
     reader.onload = e => {
         const dataUrl  = e.target.result;
@@ -248,7 +269,7 @@ function renderImagePreviews() {
         const wrap = document.createElement('div');
         wrap.className = 'preview-thumb-wrap';
         wrap.innerHTML = `<img class="preview-thumb" src="${img.dataUrl}" alt="${esc(img.name)}">
-            <button class="preview-remove" data-id="${img.id}" title="Remove">✕</button>`;
+            <button class="preview-remove" title="Remove">✕</button>`;
         wrap.querySelector('.preview-remove').addEventListener('click', () => {
             state.pendingImages = state.pendingImages.filter(i => i.id !== img.id);
             renderImagePreviews();
@@ -262,28 +283,35 @@ function toggleSidebar() {
     el.overlay.classList.toggle('active');
 }
 
-function switchView(view) {
-    const from = view === 'settings' ? el.chatView : el.settingsView;
-    const to   = view === 'settings' ? el.settingsView : el.chatView;
-    from.classList.add('view-leave');
-    setTimeout(() => {
-        from.classList.remove('active', 'view-leave');
-        to.classList.add('active', 'view-enter');
-        lucide.createIcons();
-        setTimeout(() => to.classList.remove('view-enter'), 340);
-    }, 200);
+function closeSidebarMobile() {
     if (window.innerWidth <= 768) {
         el.sidebar.classList.remove('open');
         el.overlay.classList.remove('active');
     }
 }
 
+function switchView(view) {
+    const isSettings = view === 'settings';
+    const from = isSettings ? el.chatView    : el.settingsView;
+    const to   = isSettings ? el.settingsView : el.chatView;
+
+    from.classList.add('view-leave');
+    setTimeout(() => {
+        from.classList.remove('active', 'view-leave');
+        to.classList.add('active', 'view-enter');
+        lucide.createIcons();
+        setTimeout(() => to.classList.remove('view-enter'), 300);
+    }, 200);
+
+    closeSidebarMobile();
+}
+
 function saveGeminiKey() {
     const raw = el.geminiKeyInput.value.trim();
-    if (!raw)                   { showToast('Enter a key first.', 'error'); return; }
-    if (!raw.startsWith('AIza')){ showToast('Gemini keys start with AIza.', 'error'); return; }
-    if (raw.length < 30)        { showToast('That key seems too short.', 'error'); return; }
-    if (/\s/.test(raw))         { showToast('Remove spaces from your key.', 'error'); return; }
+    if (!raw)                    { showToast('Enter a key first.', 'error'); return; }
+    if (!raw.startsWith('AIza')) { showToast('Gemini keys start with AIza.', 'error'); return; }
+    if (raw.length < 30)         { showToast('That key looks too short.', 'error'); return; }
+    if (/\s/.test(raw))          { showToast('Remove spaces from the key.', 'error'); return; }
     state.geminiKey = raw;
     localStorage.setItem('mousy_gemini_key', raw);
     updateKeyBadge();
@@ -314,7 +342,7 @@ function updateKeyBadge() {
 }
 
 function updateOrKeyBadge() {
-    const ok = state.orKey && state.orKey.length > 10;
+    const ok = state.orKey && state.orKey.length > 8;
     el.orKeyBadge.textContent = ok ? '● Active' : '● No Key';
     el.orKeyBadge.className   = 'key-badge ' + (ok ? 'has-key' : 'no-key');
 }
@@ -334,83 +362,30 @@ function switchChat(id) {
     state.currentId = id;
     const chat = state.chats.find(c => c.id === id);
     if (!chat) return;
-    const modelVal = chat.model || DEFAULT_MODEL;
-    el.modelSelect.value = modelVal;
+    el.modelSelect.value = chat.model || DEFAULT_MODEL;
     if (!el.modelSelect.value) el.modelSelect.value = DEFAULT_MODEL;
     renderHistory();
     renderMessages();
     closeSidebarMobile();
 }
 
-function closeSidebarMobile() {
-    if (window.innerWidth <= 768) {
-        el.sidebar.classList.remove('open');
-        el.overlay.classList.remove('active');
-    }
-}
-
-function showRenameModal(chat) {
-    el.modalTitle.textContent = 'Rename Chat';
-    el.modalInput.style.display = 'block';
-    el.modalInput.value = chat.title;
-    el.chatModal.classList.add('active');
-    setTimeout(() => el.modalInput.focus(), 100);
-
-    el.modalConfirm.onclick = () => {
-        const newTitle = el.modalInput.value.trim();
-        if (!newTitle) { showToast('Name cannot be empty.', 'error'); return; }
-        chat.title = newTitle;
-        saveChats();
-        renderHistory();
-        closeModal();
-        showToast('Chat renamed.', 'success');
-    };
-    el.modalInput.onkeydown = e => { if (e.key === 'Enter') el.modalConfirm.click(); };
-}
-
-function showDeleteModal(chat) {
-    el.modalTitle.textContent = `Delete "${chat.title}"?`;
-    el.modalInput.style.display = 'none';
-    el.chatModal.classList.add('active');
-
-    el.modalConfirm.onclick = () => {
-        state.chats = state.chats.filter(c => c.id !== chat.id);
-        saveChats();
-        if (state.currentId === chat.id) {
-            if (state.chats.length > 0) switchChat(state.chats[0].id);
-            else createNewChat();
-        }
-        renderHistory();
-        closeModal();
-        showToast('Chat deleted.', 'success');
-    };
-}
-
-function closeModal() {
-    el.chatModal.classList.remove('active');
-    el.modalConfirm.onclick = null;
-    el.modalInput.onkeydown = null;
-}
-
 function renderHistory() {
     el.historyList.innerHTML = '';
-    const query = state.searchQuery;
-    const filtered = query
-        ? state.chats.filter(c => c.title.toLowerCase().includes(query))
-        : state.chats;
+    const q = state.searchQuery;
+    const list = q ? state.chats.filter(c => c.title.toLowerCase().includes(q)) : state.chats;
 
-    if (filtered.length === 0 && query) {
+    if (list.length === 0) {
         const empty = document.createElement('div');
         empty.className = 'history-empty';
-        empty.textContent = 'No chats found';
+        empty.textContent = q ? 'No chats found' : 'No chats yet';
         el.historyList.appendChild(empty);
         return;
     }
 
-    filtered.forEach((chat, i) => {
-        const item = document.createElement('div');
-        item.className = 'history-item-wrap' + (chat.id === state.currentId ? ' active' : '');
-        item.style.animationDelay = `${i * 0.025}s`;
+    list.forEach((chat, i) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'history-item-wrap' + (chat.id === state.currentId ? ' active' : '');
+        wrap.style.animationDelay = `${i * 0.022}s`;
 
         const btn = document.createElement('button');
         btn.className = 'history-item-btn';
@@ -434,10 +409,11 @@ function renderHistory() {
 
         actions.appendChild(renameBtn);
         actions.appendChild(deleteBtn);
-        item.appendChild(btn);
-        item.appendChild(actions);
-        el.historyList.appendChild(item);
+        wrap.appendChild(btn);
+        wrap.appendChild(actions);
+        el.historyList.appendChild(wrap);
     });
+
     lucide.createIcons();
 }
 
@@ -448,7 +424,7 @@ function renderMessages() {
     if (!chat || chat.messages.length === 0) {
         const empty = document.createElement('div');
         empty.className = 'empty-state';
-        const hasKey = (state.geminiKey && state.geminiKey.startsWith('AIza')) || (state.orKey && state.orKey.length > 10);
+        const hasKey = (state.geminiKey && state.geminiKey.startsWith('AIza')) || (state.orKey && state.orKey.length > 8);
         empty.innerHTML = `
             <div class="empty-orb">
                 <div class="orb-ring"></div>
@@ -456,7 +432,7 @@ function renderMessages() {
                 <div class="orb-core">✦</div>
             </div>
             <div class="empty-title">Mousy's AI</div>
-            <div class="empty-sub">${hasKey ? 'Start a conversation below. Images supported.' : 'Save your API key in Settings to begin.'}</div>`;
+            <div class="empty-sub">${hasKey ? 'Start a conversation below. Images supported.' : 'Save an API key in Settings to begin.'}</div>`;
         el.chatContainer.appendChild(empty);
         return;
     }
@@ -469,38 +445,46 @@ function renderMessages() {
 function getEffectClass() {
     const fx = state.settings.textEffect || 'fade-in';
     const map = {
-        'none':        'msg-in',
-        'fade-in':     'msg-fx-fade',
-        'slide-up':    'msg-fx-slide-up',
-        'slide-right': 'msg-in',
-        'scale-in':    'msg-fx-scale',
-        'blur-in':     'msg-fx-blur',
-        'typewriter':  'msg-fx-fade',
-        'glitch':      'msg-fx-glitch',
-        'bounce':      'msg-fx-bounce'
+        'none':    'msg-in',
+        'fade-in': 'msg-fx-fade',
+        'slide-up':'msg-fx-slide-up',
+        'scale-in':'msg-fx-scale',
+        'blur-in': 'msg-fx-blur',
+        'glitch':  'msg-fx-glitch',
+        'bounce':  'msg-fx-bounce'
     };
     return map[fx] || 'msg-fx-fade';
 }
 
 function appendMessage(role, content, images = [], animate = true) {
     const wrap = document.createElement('div');
-    const effectClass = animate ? (role === 'user' ? 'msg-in-right' : getEffectClass()) : '';
-    wrap.className = 'message-wrap' + (effectClass ? ' ' + effectClass : '');
+    const fx   = animate ? (role === 'user' ? 'msg-in-right' : getEffectClass()) : '';
+    wrap.className = 'message-wrap' + (fx ? ' ' + fx : '');
 
     if (role === 'user') {
         let imgHtml = '';
         if (images && images.length > 0) {
             imgHtml = `<div class="user-bubble-images">${images.map(img =>
-                `<img class="user-bubble-img" src="data:${img.mimeType};base64,${img.base64}" alt="uploaded image">`
+                `<img class="user-bubble-img" src="data:${img.mimeType};base64,${img.base64}" alt="image">`
             ).join('')}</div>`;
         }
         wrap.innerHTML = `${imgHtml}<div class="user-bubble">${esc(content)}</div>`;
+
     } else if (role === 'image') {
-        wrap.innerHTML = `<div class="ai-label">Mousy's AI</div><div class="generated-image-wrap"><img class="generated-image" src="data:${content.mimeType};base64,${content.data}" alt="generated image"><a class="img-download-btn" href="data:${content.mimeType};base64,${content.data}" download="generated.png">↓ Download</a></div>`;
+        wrap.innerHTML = `<div class="ai-label">Mousy's AI</div>
+            <div class="generated-image-wrap">
+                <img class="generated-image" src="data:${content.mimeType};base64,${content.data}" alt="generated">
+                <a class="img-download-btn" href="data:${content.mimeType};base64,${content.data}" download="generated.png">
+                    ↓ Download
+                </a>
+            </div>`;
+
     } else if (role === 'error') {
         wrap.innerHTML = `<div class="error-bubble">${esc(content)}</div>`;
+
     } else {
-        wrap.innerHTML = `<div class="ai-label">Mousy's AI</div><div class="message-content">${parseMd(content)}</div>`;
+        wrap.innerHTML = `<div class="ai-label">Mousy's AI</div>
+            <div class="message-content">${parseMd(content)}</div>`;
     }
 
     el.chatContainer.appendChild(wrap);
@@ -512,7 +496,11 @@ function showTyping() {
     wrap.className = 'message-wrap msg-in';
     wrap.id = 'typingWrap';
     wrap.innerHTML = `<div class="ai-label">Mousy's AI</div>
-        <div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+        <div class="typing-indicator">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+        </div>`;
     el.chatContainer.appendChild(wrap);
     scrollBottom();
     return wrap;
@@ -524,9 +512,9 @@ function hideTyping() {
 }
 
 function setRetryNotice(wrap, attempt, delaySec) {
-    let notice = wrap.querySelector('.retry-notice');
-    if (!notice) { notice = document.createElement('div'); notice.className = 'retry-notice'; wrap.appendChild(notice); }
-    notice.textContent = `Rate limited, retrying in ${delaySec}s (attempt ${attempt}/3)...`;
+    let n = wrap.querySelector('.retry-notice');
+    if (!n) { n = document.createElement('div'); n.className = 'retry-notice'; wrap.appendChild(n); }
+    n.textContent = `Rate limited — retrying in ${delaySec}s (attempt ${attempt}/3)…`;
 }
 
 function buildGeminiContents(messages) {
@@ -545,6 +533,7 @@ async function callGemini(messages, model, typingWrap) {
     const MAX_RETRIES = 3;
     let attempt = 0;
     let delay   = 8;
+
     const contents = buildGeminiContents(messages);
     const body = {
         contents,
@@ -554,13 +543,12 @@ async function callGemini(messages, model, typingWrap) {
 
     if (GEMINI3_MODELS.has(model)) {
         body.generationConfig.thinkingConfig = { thinkingLevel: 'HIGH' };
-    } else if (GEMINI25_THINKING_MODELS.has(model)) {
+    } else if (GEMINI25_THINKING.has(model)) {
         body.generationConfig.thinkingConfig = { thinkingBudget: -1 };
     }
 
     while (true) {
-        const url = `${GEMINI_BASE}/${model}:generateContent`;
-        const res = await fetch(url, {
+        const res = await fetch(`${GEMINI_BASE}/${model}:generateContent`, {
             method: 'POST',
             headers: { 'x-goog-api-key': state.geminiKey, 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
@@ -568,11 +556,11 @@ async function callGemini(messages, model, typingWrap) {
 
         if (res.status === 429) {
             attempt++;
-            const body429 = await res.json().catch(() => ({}));
-            const isQuota = body429?.error?.status === 'RESOURCE_EXHAUSTED' &&
-                body429?.error?.message?.toLowerCase().includes('quota');
+            const d429 = await res.json().catch(() => ({}));
+            const isQuota = d429?.error?.status === 'RESOURCE_EXHAUSTED' &&
+                d429?.error?.message?.toLowerCase().includes('quota');
             if (isQuota) throw { message: 'Your Gemini quota ran out. Check usage at aistudio.google.com.' };
-            if (attempt > MAX_RETRIES) throw { message: `Still rate limited after ${MAX_RETRIES} attempts. Try again soon.` };
+            if (attempt > MAX_RETRIES) throw { message: `Still rate limited after ${MAX_RETRIES} retries. Try again shortly.` };
             setRetryNotice(typingWrap, attempt, delay);
             await sleep(delay * 1000);
             delay = Math.min(delay * 2, 60);
@@ -580,19 +568,20 @@ async function callGemini(messages, model, typingWrap) {
         }
 
         const data = await res.json();
+
         if (!res.ok) {
             const s   = res.status;
-            let   msg = data?.error?.message || 'Something went wrong, please try again.';
+            let   msg = data?.error?.message || 'Something went wrong.';
             if (s === 400) {
                 msg = msg.toLowerCase().includes('api key')
-                    ? 'That Gemini key does not seem valid. Check Settings.'
-                    : `Gemini could not process that. ${msg}`;
+                    ? 'Your Gemini key doesn\'t look valid. Check Settings.'
+                    : `Gemini couldn't process that. ${msg}`;
             } else if (s === 401 || s === 403) {
-                msg = 'That Gemini key does not seem valid. Check Settings.';
+                msg = 'Your Gemini key doesn\'t look valid. Check Settings.';
             } else if (s === 404) {
-                msg = `Model "${model}" not found. Try another model.`;
+                msg = `Model "${model}" not found. Try a different model.`;
             } else if (s >= 500) {
-                msg = 'Gemini is having trouble on their end. Try again.';
+                msg = 'Gemini is having trouble on their end. Try again shortly.';
             }
             throw { message: msg };
         }
@@ -600,8 +589,9 @@ async function callGemini(messages, model, typingWrap) {
         const candidate = data?.candidates?.[0];
         if (!candidate) {
             const reason = data?.promptFeedback?.blockReason;
-            if (reason) throw { message: `Gemini blocked that prompt (${reason}). Try rephrasing.` };
-            throw { message: 'Got an empty response. Try again.' };
+            throw { message: reason
+                ? `Gemini blocked that prompt (${reason}). Try rephrasing.`
+                : 'Got an empty response. Try again.' };
         }
 
         const text = candidate.content?.parts?.filter(p => p.text)?.map(p => p.text)?.join('') || '';
@@ -611,37 +601,31 @@ async function callGemini(messages, model, typingWrap) {
 }
 
 async function callGeminiImage(prompt, model) {
-    const url = `${GEMINI_BASE}/${model}:generateContent`;
     const body = {
         contents: [{ parts: [{ text: prompt }], role: 'user' }],
         generationConfig: { responseModalities: ['IMAGE', 'TEXT'] }
     };
 
-    const res = await fetch(url, {
+    const res = await fetch(`${GEMINI_BASE}/${model}:generateContent`, {
         method: 'POST',
         headers: { 'x-goog-api-key': state.geminiKey, 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
     });
 
     const data = await res.json();
-    if (!res.ok) {
-        const msg = data?.error?.message || 'Image generation failed.';
-        throw { message: msg };
-    }
+    if (!res.ok) throw { message: data?.error?.message || 'Image generation failed.' };
 
-    const parts = data?.candidates?.[0]?.content?.parts || [];
+    const parts     = data?.candidates?.[0]?.content?.parts || [];
     const imagePart = parts.find(p => p.inlineData);
     const textPart  = parts.find(p => p.text);
 
-    if (!imagePart) {
-        throw { message: textPart?.text || 'No image returned. Try a different prompt.' };
-    }
+    if (!imagePart) throw { message: textPart?.text || 'No image returned. Try a different prompt.' };
 
     return { data: imagePart.inlineData.data, mimeType: imagePart.inlineData.mimeType, text: textPart?.text || '' };
 }
 
 async function callOpenRouter(messages, model, typingWrap) {
-    const systemMsg = { role: 'system', content: state.settings.systemPrompt };
+    const systemMsg  = { role: 'system', content: state.settings.systemPrompt };
     const allMessages = [systemMsg, ...messages.map(m => {
         if (m.role === 'assistant') return { role: 'assistant', content: m.content };
         if (m.images && m.images.length > 0) {
@@ -667,39 +651,33 @@ async function callOpenRouter(messages, model, typingWrap) {
             'HTTP-Referer': 'https://mousysai.app',
             'X-Title': "Mousy's AI"
         },
-        body: JSON.stringify({
-            model,
-            messages: allMessages,
-            stream: true,
-            max_tokens: 4096
-        })
+        body: JSON.stringify({ model, messages: allMessages, stream: true, max_tokens: 4096 })
     });
 
     if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        const msg = errData?.error?.message || `OpenRouter error (${res.status})`;
-        throw { message: msg };
+        throw { message: errData?.error?.message || `OpenRouter error (${res.status}).` };
     }
 
     const reader  = res.body.getReader();
     const decoder = new TextDecoder();
     let   full    = '';
-    let   buffer  = '';
+    let   buf     = '';
 
     while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop();
+        buf += decoder.decode(value, { stream: true });
+        const lines = buf.split('\n');
+        buf = lines.pop();
 
         for (const line of lines) {
             if (!line.startsWith('data: ')) continue;
-            const data = line.slice(6).trim();
-            if (data === '[DONE]') break;
-            if (!data || data.startsWith(':')) continue;
+            const chunk = line.slice(6).trim();
+            if (chunk === '[DONE]') break;
+            if (!chunk || chunk.startsWith(':')) continue;
             try {
-                const json    = JSON.parse(data);
+                const json    = JSON.parse(chunk);
                 const content = json.choices?.[0]?.delta?.content;
                 if (content) full += content;
             } catch {}
@@ -720,19 +698,20 @@ async function sendMessage() {
     if (!text && images.length === 0) { showToast('Type a message or attach an image.', 'error'); return; }
 
     const isOR    = model.startsWith('or:');
-    const isImgGen = IMAGE_GEN_MODELS.has(model);
+    const isImg   = IMAGE_GEN_MODELS.has(model);
     const orModel = isOR ? model.slice(3) : null;
 
     if (!isOR && !state.geminiKey) { showToast('Add your Gemini API key in Settings.', 'error'); return; }
-    if (isOR && !state.orKey) { showToast('Add your OpenRouter API key in Settings.', 'error'); return; }
+    if (isOR  && !state.orKey)     { showToast('Add your OpenRouter API key in Settings.', 'error'); return; }
 
     const chat = state.chats.find(c => c.id === state.currentId);
     if (!chat) return;
 
     chat.model = model;
     if (chat.messages.length === 0) {
-        chat.title = text ? (text.length > 30 ? text.substring(0, 30) + '…' : text)
-                          : `Image${images.length > 1 ? 's' : ''}`;
+        chat.title = text
+            ? (text.length > 30 ? text.substring(0, 30) + '…' : text)
+            : `Image${images.length > 1 ? 's' : ''}`;
     }
 
     const userMsg = {
@@ -757,7 +736,7 @@ async function sendMessage() {
     el.sendBtn.disabled = true;
 
     try {
-        if (isImgGen) {
+        if (isImg) {
             const result = await callGeminiImage(text, model);
             hideTyping();
             const imgMsg = { role: 'image', content: { data: result.data, mimeType: result.mimeType } };
@@ -769,12 +748,9 @@ async function sendMessage() {
                 appendMessage('assistant', result.text, [], true);
             }
         } else {
-            let aiText;
-            if (isOR) {
-                aiText = await callOpenRouter(chat.messages, orModel, typingWrap);
-            } else {
-                aiText = await callGemini(chat.messages, model, typingWrap);
-            }
+            const aiText = isOR
+                ? await callOpenRouter(chat.messages, orModel, typingWrap)
+                : await callGemini(chat.messages, model, typingWrap);
             hideTyping();
             chat.messages.push({ role: 'assistant', content: aiText, images: [] });
             appendMessage('assistant', aiText, [], true);
@@ -800,26 +776,41 @@ function parseMd(text) {
     return text
         .replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => {
             const l    = lang || 'text';
-            const safe = code.trim().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-            return `<div class="code-block-container"><div class="code-header"><span>${l.toUpperCase()}</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><code class="language-${l}">${safe}</code></pre></div>`;
+            const safe = code.trim()
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+            return `<div class="code-block-container">
+                <div class="code-header">
+                    <span>${l.toUpperCase()}</span>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <pre><code class="language-${l}">${safe}</code></pre>
+            </div>`;
         })
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/`([^`]+)`/g, '<code style="background:var(--code-inline-bg);padding:1px 6px;border-radius:5px;font-family:JetBrains Mono,monospace;font-size:0.83em">$1</code>')
-        .replace(/^#{3}\s(.+)$/gm, '<h3>$1</h3>')
-        .replace(/^#{2}\s(.+)$/gm, '<h2>$1</h2>')
-        .replace(/^#{1}\s(.+)$/gm, '<h1>$1</h1>')
-        .replace(/^[-*]\s(.+)$/gm, '<li>$1</li>')
-        .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
-        .replace(/^\d+\.\s(.+)$/gm, '<oli>$1</oli>')
-        .replace(/(<oli>.*<\/oli>)/gs, m => '<ol>' + m.replace(/<\/?oli>/g, m2 => m2 === '<oli>' ? '<li>' : '</li>') + '</ol>')
+        .replace(/`([^`]+)`/g, '<code style="background:var(--bg-card);padding:1px 6px;border-radius:5px;font-family:JetBrains Mono,monospace;font-size:0.82em;color:var(--text-main)">$1</code>')
+        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+        .replace(/^## (.+)$/gm,  '<h2>$1</h2>')
+        .replace(/^# (.+)$/gm,   '<h1>$1</h1>')
+        .replace(/^[-*] (.+)$/gm, '<li>$1</li>')
+        .replace(/(<li>[\s\S]*?<\/li>)(?!\s*<li>)/g, '<ul>$1</ul>')
+        .replace(/^\d+\. (.+)$/gm, '<oli>$1</oli>')
+        .replace(/(<oli>[\s\S]*?<\/oli>)(?!\s*<oli>)/g, m =>
+            '<ol>' + m.replace(/<oli>/g, '<li>').replace(/<\/oli>/g, '</li>') + '</ol>')
         .replace(/\n\n+/g, '</p><p>')
         .replace(/\n/g, '<br>')
-        .replace(/^/, '<p>').replace(/$/, '</p>');
+        .replace(/^/, '<p>')
+        .replace(/$/, '</p>');
 }
 
 function esc(str) {
-    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
 }
 
 function copyCode(btn) {
@@ -829,6 +820,50 @@ function copyCode(btn) {
         btn.classList.add('copied');
         setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
     });
+}
+
+function showRenameModal(chat) {
+    el.modalTitle.textContent    = 'Rename Chat';
+    el.modalInput.style.display  = 'block';
+    el.modalInput.value          = chat.title;
+    el.chatModal.classList.add('active');
+    setTimeout(() => el.modalInput.focus(), 80);
+
+    el.modalConfirm.onclick = () => {
+        const t = el.modalInput.value.trim();
+        if (!t) { showToast('Name cannot be empty.', 'error'); return; }
+        chat.title = t;
+        saveChats();
+        renderHistory();
+        closeModal();
+        showToast('Chat renamed.', 'success');
+    };
+    el.modalInput.onkeydown = e => { if (e.key === 'Enter') el.modalConfirm.click(); };
+}
+
+function showDeleteModal(chat) {
+    el.modalTitle.textContent   = `Delete "${chat.title}"?`;
+    el.modalInput.style.display = 'none';
+    el.chatModal.classList.add('active');
+
+    el.modalConfirm.onclick = () => {
+        state.chats = state.chats.filter(c => c.id !== chat.id);
+        saveChats();
+        if (state.currentId === chat.id) {
+            if (state.chats.length > 0) switchChat(state.chats[0].id);
+            else createNewChat();
+        } else {
+            renderHistory();
+        }
+        closeModal();
+        showToast('Chat deleted.', 'success');
+    };
+}
+
+function closeModal() {
+    el.chatModal.classList.remove('active');
+    el.modalConfirm.onclick = null;
+    el.modalInput.onkeydown = null;
 }
 
 function scrollBottom() {
@@ -841,12 +876,12 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 function showToast(msg, type = 'default') {
     const t = document.createElement('div');
-    t.className = `toast toast-${type}`;
+    t.className  = `toast toast-${type}`;
     t.textContent = msg;
     el.toastContainer.appendChild(t);
     setTimeout(() => {
         t.classList.add('toast-out');
-        setTimeout(() => t.remove(), 240);
+        setTimeout(() => t.remove(), 220);
     }, 2800);
 }
 

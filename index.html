@@ -42,23 +42,31 @@
                 </button>
                 <div class="model-picker-wrap">
                     <select id="modelSelect" class="top-model-select">
-                        <optgroup label="GPT-5">
-                            <option value="gpt-5.4">GPT-5.4</option>
-                            <option value="gpt-5-mini">GPT-5 Mini</option>
+                        <optgroup label="── Gemini 3">
+                            <option value="gemini-3.1-pro">Gemini 3.1 Pro</option>
+                            <option value="gemini-3-flash" selected>Gemini 3 Flash</option>
+                            <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash Lite</option>
                         </optgroup>
-                        <optgroup label="GPT-4">
-                            <option value="gpt-4o" selected>GPT-4o</option>
-                            <option value="gpt-4.1">GPT-4.1</option>
-                            <option value="gpt-4.1-mini">GPT-4.1 Mini</option>
-                            <option value="gpt-4.1-nano">GPT-4.1 Nano</option>
+                        <optgroup label="── Gemini 2.5">
+                            <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+                            <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                            <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
                         </optgroup>
                     </select>
                 </div>
                 <div class="header-spacer"></div>
             </header>
+
             <div class="chat-scroll" id="chatContainer"></div>
+
+            <div class="image-preview-bar" id="imagePreviewBar"></div>
+
             <div class="input-anchor">
                 <div class="input-shell">
+                    <label class="action-btn attach-btn" id="attachBtn" title="Attach image">
+                        <i data-lucide="paperclip"></i>
+                        <input type="file" id="imageInput" accept="image/*" multiple style="display:none">
+                    </label>
                     <textarea id="chatInput" placeholder="Type your command..." rows="1"></textarea>
                     <button class="action-btn send" id="sendBtn">
                         <i data-lucide="arrow-up"></i>
@@ -81,21 +89,21 @@
                     <div class="setting-card">
                         <div class="setting-card-label">
                             <i data-lucide="key"></i>
-                            <span>OpenAI API Key</span>
-                            <span class="key-badge" id="keyBadge"></span>
+                            <span>Gemini API Key</span>
+                            <span class="key-badge" id="geminiKeyBadge"></span>
                         </div>
                         <div class="key-input-row">
                             <div class="key-field-wrap">
-                                <input type="password" id="apiKeyInput" placeholder="sk-..." autocomplete="off" spellcheck="false">
-                                <button class="icon-toggle" id="toggleKeyBtn" title="Show / hide key">
+                                <input type="password" id="geminiKeyInput" placeholder="AIza..." autocomplete="off" spellcheck="false">
+                                <button class="icon-toggle" id="toggleGeminiKeyBtn" title="Show / hide key">
                                     <i data-lucide="eye"></i>
                                 </button>
                             </div>
-                            <button class="btn-save-key" id="saveApiKeyBtn">
-                                <i data-lucide="save"></i> Save Key
+                            <button class="btn-save-key" id="saveGeminiKeyBtn">
+                                <i data-lucide="save"></i> Save
                             </button>
                         </div>
-                        <p class="setting-sub">Stored only in this browser's localStorage. Never sent anywhere except OpenAI.</p>
+                        <p class="setting-sub">Get your key from <a href="https://aistudio.google.com/app/apikey" target="_blank" class="setting-link">Google AI Studio</a>. Stored only in this browser.</p>
                     </div>
 
                     <div class="setting-card">

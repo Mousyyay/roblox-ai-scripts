@@ -129,7 +129,6 @@
                         <div class="setting-card-label">
                             <i data-lucide="key"></i>
                             <span>Gemini API Key</span>
-                            <span class="key-badge" id="geminiKeyBadge"></span>
                         </div>
                         <div class="key-input-row">
                             <div class="key-field-wrap">
@@ -149,7 +148,6 @@
                         <div class="setting-card-label">
                             <i data-lucide="zap"></i>
                             <span>OpenRouter API Key</span>
-                            <span class="key-badge" id="orKeyBadge"></span>
                         </div>
                         <div class="key-input-row">
                             <div class="key-field-wrap">
@@ -162,7 +160,7 @@
                                 <i data-lucide="save"></i> Save
                             </button>
                         </div>
-                        <p class="setting-sub">Get your key from <a href="https://openrouter.ai/keys" target="_blank" class="setting-link">OpenRouter</a>. Required for Seedream & more</p>
+                        <p class="setting-sub">Get your key from <a href="https://openrouter.ai/keys" target="_blank" class="setting-link">OpenRouter</a>. Required for Trinity Large, Step 3.5 Flash, and Seedream image generation.</p>
                     </div>
 
                     <div class="setting-card">
@@ -211,6 +209,16 @@
                                     <div class="ui-select-option" data-value="more">More Emojis</div>
                                 </div>
                             </div>
+                        </div>
+
+                        <div class="setting-toggle-row">
+                            <div class="setting-toggle-info">
+                                <div class="setting-toggle-name">Script Comments</div>
+                                <div class="setting-toggle-sub">Include comments in generated code</div>
+                            </div>
+                            <button class="toggle-switch" id="scriptCommentsToggle">
+                                <div class="toggle-knob"></div>
+                            </button>
                         </div>
 
                     </div>

@@ -6,7 +6,7 @@
     <title>Mousy's AI</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23111'/><text x='16' y='23' font-size='17' text-anchor='middle' fill='white' font-family='serif'>✦</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Nunito:wght@300;400;500;600;700&family=Lato:wght@300;400;700&family=Source+Sans+3:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Raleway:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
@@ -21,13 +21,11 @@
             <span class="brand-glyph">✦</span>
             Mousy's AI
         </div>
-
         <div class="nav-section">
             <button class="btn-primary" id="newChatBtn">
                 <i data-lucide="plus"></i> New Chat
             </button>
         </div>
-
         <div class="search-wrap">
             <div class="search-box">
                 <i data-lucide="search"></i>
@@ -37,9 +35,7 @@
                 </button>
             </div>
         </div>
-
         <div class="history-list" id="historyList"></div>
-
         <div class="sidebar-footer">
             <button class="nav-item" id="openSettingsBtn">
                 <i data-lucide="settings"></i> Settings
@@ -54,7 +50,6 @@
                 <button class="action-btn" id="menuToggle">
                     <i data-lucide="menu"></i>
                 </button>
-
                 <div class="model-picker-wrap">
                     <div class="model-dropdown-root" id="modelDropdownRoot">
                         <button class="model-trigger" id="modelTrigger">
@@ -70,7 +65,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="header-actions">
                     <button class="action-btn header-action-btn" id="exportChatBtn" title="Export chat">
                         <i data-lucide="download"></i>
@@ -111,266 +105,328 @@
             <div class="settings-scroll">
                 <div class="settings-content">
 
-                    <div class="setting-card">
-                        <div class="setting-card-label">
-                            <i data-lucide="user"></i>
-                            <span>Profile</span>
-                        </div>
-                        <div class="setting-inline-row">
-                            <label class="setting-inline-label">Your name</label>
-                            <input type="text" id="profileNameInput" class="setting-text-input" placeholder="User">
-                        </div>
-                        <button class="btn-save-prompt" id="saveProfileBtn">
-                            <i data-lucide="check"></i> Save Profile
+                    <!-- Profile -->
+                    <div class="acc-item open">
+                        <button class="acc-header" type="button">
+                            <span class="acc-header-inner"><i data-lucide="user"></i><span>Profile</span></span>
+                            <i data-lucide="chevron-down" class="acc-chevron"></i>
                         </button>
-                    </div>
-
-                    <div class="setting-card">
-                        <div class="setting-card-label">
-                            <i data-lucide="key"></i>
-                            <span>Gemini API Key</span>
-                        </div>
-                        <div class="key-input-row">
-                            <div class="key-field-wrap">
-                                <input type="password" id="geminiKeyInput" placeholder="AIza…" autocomplete="off" spellcheck="false">
-                                <button class="icon-toggle" id="toggleGeminiKeyBtn" title="Show/hide">
-                                    <i data-lucide="eye"></i>
-                                </button>
+                        <div class="acc-body">
+                            <div class="setting-inline-row">
+                                <label class="setting-inline-label">Your name</label>
+                                <input type="text" id="profileNameInput" class="setting-text-input" placeholder="User">
                             </div>
-                            <button class="btn-save-key" id="saveGeminiKeyBtn">
-                                <i data-lucide="save"></i> Save
+                            <button class="btn-save-prompt" id="saveProfileBtn">
+                                <i data-lucide="check"></i> Save Profile
                             </button>
                         </div>
-                        <p class="setting-sub">Get your key from <a href="https://aistudio.google.com/app/apikey" target="_blank" class="setting-link">Google AI Studio</a>. Required for Gemini models.</p>
                     </div>
 
-                    <div class="setting-card">
-                        <div class="setting-card-label">
-                            <i data-lucide="zap"></i>
-                            <span>OpenRouter API Key</span>
-                        </div>
-                        <div class="key-input-row">
-                            <div class="key-field-wrap">
-                                <input type="password" id="orKeyInput" placeholder="sk-or-…" autocomplete="off" spellcheck="false">
-                                <button class="icon-toggle" id="toggleOrKeyBtn" title="Show/hide">
-                                    <i data-lucide="eye"></i>
-                                </button>
-                            </div>
-                            <button class="btn-save-key" id="saveOrKeyBtn">
-                                <i data-lucide="save"></i> Save
-                            </button>
-                        </div>
-                        <p class="setting-sub">Get your key from <a href="https://openrouter.ai/keys" target="_blank" class="setting-link">OpenRouter</a>. Required for Trinity Large, Step 3.5 Flash, and Seedream image generation.</p>
-                    </div>
-
-                    <div class="setting-card">
-                        <div class="setting-card-label">
-                            <i data-lucide="cpu"></i>
-                            <span>System Identity</span>
-                        </div>
-                        <textarea id="systemPromptInput" class="system-textarea" placeholder="Describe how the AI should behave…" rows="3"></textarea>
-                        <button class="btn-save-prompt" id="saveSystemPromptBtn">
-                            <i data-lucide="check"></i> Save Prompt
+                    <!-- API Keys -->
+                    <div class="acc-item">
+                        <button class="acc-header" type="button">
+                            <span class="acc-header-inner"><i data-lucide="key"></i><span>API Keys</span></span>
+                            <i data-lucide="chevron-down" class="acc-chevron"></i>
                         </button>
-                    </div>
-
-                    <div class="setting-card">
-                        <div class="setting-card-label">
-                            <i data-lucide="brain"></i>
-                            <span>AI Behaviour</span>
-                        </div>
-
-                        <div class="setting-inline-row">
-                            <label class="setting-inline-label">Response Style</label>
-                            <div class="ui-select-wrap" id="responseStyleSelect">
-                                <button class="ui-select-trigger" type="button">
-                                    <span class="ui-select-value">Professional</span>
-                                    <i data-lucide="chevron-down"></i>
-                                </button>
-                                <div class="ui-select-panel">
-                                    <div class="ui-select-option active" data-value="professional">Professional</div>
-                                    <div class="ui-select-option" data-value="friendly">Friendly</div>
-                                    <div class="ui-select-option" data-value="nerdy">Nerdy</div>
-                                    <div class="ui-select-option" data-value="sincere">Sincere</div>
+                        <div class="acc-body">
+                            <div class="acc-sub-label">Gemini API Key</div>
+                            <div class="key-input-row">
+                                <div class="key-field-wrap">
+                                    <input type="password" id="geminiKeyInput" placeholder="AIza…" autocomplete="off" spellcheck="false">
+                                    <button class="icon-toggle" id="toggleGeminiKeyBtn" title="Show/hide">
+                                        <i data-lucide="eye"></i>
+                                    </button>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div class="setting-inline-row">
-                            <label class="setting-inline-label">Emoji Usage</label>
-                            <div class="ui-select-wrap" id="emojiLevelSelect">
-                                <button class="ui-select-trigger" type="button">
-                                    <span class="ui-select-value">No Emojis</span>
-                                    <i data-lucide="chevron-down"></i>
+                                <button class="btn-save-key" id="saveGeminiKeyBtn">
+                                    <i data-lucide="save"></i> Save
                                 </button>
-                                <div class="ui-select-panel">
-                                    <div class="ui-select-option active" data-value="none">No Emojis</div>
-                                    <div class="ui-select-option" data-value="less">Fewer Emojis</div>
-                                    <div class="ui-select-option" data-value="more">More Emojis</div>
+                            </div>
+                            <p class="setting-sub">Get your key from <a href="https://aistudio.google.com/app/apikey" target="_blank" class="setting-link">Google AI Studio</a>.</p>
+
+                            <div class="acc-divider"></div>
+
+                            <div class="acc-sub-label">OpenRouter API Key</div>
+                            <div class="key-input-row">
+                                <div class="key-field-wrap">
+                                    <input type="password" id="orKeyInput" placeholder="sk-or-…" autocomplete="off" spellcheck="false">
+                                    <button class="icon-toggle" id="toggleOrKeyBtn" title="Show/hide">
+                                        <i data-lucide="eye"></i>
+                                    </button>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div class="setting-toggle-row">
-                            <div class="setting-toggle-info">
-                                <div class="setting-toggle-name">Script Comments</div>
-                                <div class="setting-toggle-sub">Include comments in generated code</div>
-                            </div>
-                            <button class="toggle-switch" id="scriptCommentsToggle">
-                                <div class="toggle-knob"></div>
-                            </button>
-                        </div>
-
-                    </div>
-
-                    <div class="setting-card">
-                        <div class="setting-card-label">
-                            <i data-lucide="palette"></i>
-                            <span>Appearance</span>
-                        </div>
-
-                        <div class="setting-inline-row">
-                            <label class="setting-inline-label">Theme</label>
-                            <div class="ui-select-wrap" id="themeSelect">
-                                <button class="ui-select-trigger" type="button">
-                                    <span class="ui-select-value">Dark</span>
-                                    <i data-lucide="chevron-down"></i>
+                                <button class="btn-save-key" id="saveOrKeyBtn">
+                                    <i data-lucide="save"></i> Save
                                 </button>
-                                <div class="ui-select-panel">
-                                    <div class="ui-select-option active" data-value="dark">Dark</div>
-                                    <div class="ui-select-option" data-value="light">Light</div>
-                                    <div class="ui-select-option" data-value="auto">Auto (by time)</div>
-                                </div>
                             </div>
-                        </div>
-
-                        <div class="setting-inline-row">
-                            <label class="setting-inline-label">Chat Font</label>
-                            <div class="ui-select-wrap" id="chatFontSelect">
-                                <button class="ui-select-trigger" type="button">
-                                    <span class="ui-select-value">Plus Jakarta Sans</span>
-                                    <i data-lucide="chevron-down"></i>
-                                </button>
-                                <div class="ui-select-panel">
-                                    <div class="ui-select-option active" data-value="Plus Jakarta Sans">Plus Jakarta Sans</div>
-                                    <div class="ui-select-option" data-value="Inter">Inter</div>
-                                    <div class="ui-select-option" data-value="DM Sans">DM Sans</div>
-                                    <div class="ui-select-option" data-value="IBM Plex Sans">IBM Plex Sans</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="setting-inline-row">
-                            <label class="setting-inline-label">Font Size</label>
-                            <div class="ui-select-wrap" id="fontSizeSelect">
-                                <button class="ui-select-trigger" type="button">
-                                    <span class="ui-select-value">Medium</span>
-                                    <i data-lucide="chevron-down"></i>
-                                </button>
-                                <div class="ui-select-panel">
-                                    <div class="ui-select-option" data-value="sm">Small</div>
-                                    <div class="ui-select-option active" data-value="md">Medium</div>
-                                    <div class="ui-select-option" data-value="lg">Large</div>
-                                    <div class="ui-select-option" data-value="xl">X-Large</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="setting-inline-row">
-                            <label class="setting-inline-label">Response Effect</label>
-                            <div class="ui-select-wrap" id="effectSelect">
-                                <button class="ui-select-trigger" type="button">
-                                    <span class="ui-select-value">Fade</span>
-                                    <i data-lucide="chevron-down"></i>
-                                </button>
-                                <div class="ui-select-panel">
-                                    <div class="ui-select-option" data-value="none">None</div>
-                                    <div class="ui-select-option active" data-value="fade-in">Fade</div>
-                                    <div class="ui-select-option" data-value="slide-up">Slide Up</div>
-                                    <div class="ui-select-option" data-value="scale-in">Scale In</div>
-                                    <div class="ui-select-option" data-value="blur-in">Blur In</div>
-                                    <div class="ui-select-option" data-value="glitch">Glitch</div>
-                                    <div class="ui-select-option" data-value="bounce">Bounce</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="setting-toggle-row">
-                            <div class="setting-toggle-info">
-                                <div class="setting-toggle-name">Compact Mode</div>
-                                <div class="setting-toggle-sub">Reduce message spacing</div>
-                            </div>
-                            <button class="toggle-switch" id="compactModeToggle">
-                                <div class="toggle-knob"></div>
-                            </button>
-                        </div>
-
-                        <div class="accent-row">
-                            <label class="setting-inline-label">Accent Color</label>
-                            <div class="accent-controls">
-                                <input type="color" id="accentColorInput" class="accent-swatch" value="#ffffff">
-                                <input type="text"  id="accentColorHex"   class="accent-hex"   value="#ffffff" maxlength="7" spellcheck="false">
-                                <button class="btn-save-prompt accent-save" id="saveAccentBtn"><i data-lucide="check"></i></button>
-                                <button class="btn-save-prompt accent-reset" id="resetAccentBtn" title="Reset to white"><i data-lucide="rotate-ccw"></i></button>
-                            </div>
-                        </div>
-                        <div class="accent-presets">
-                            <button class="accent-preset" data-color="#ffffff" style="background:#ffffff" title="White"></button>
-                            <button class="accent-preset" data-color="#3b82f6" style="background:#3b82f6" title="Blue"></button>
-                            <button class="accent-preset" data-color="#8b5cf6" style="background:#8b5cf6" title="Purple"></button>
-                            <button class="accent-preset" data-color="#22c55e" style="background:#22c55e" title="Green"></button>
-                            <button class="accent-preset" data-color="#f59e0b" style="background:#f59e0b" title="Amber"></button>
-                            <button class="accent-preset" data-color="#ef4444" style="background:#ef4444" title="Red"></button>
-                            <button class="accent-preset" data-color="#ec4899" style="background:#ec4899" title="Pink"></button>
-                            <button class="accent-preset" data-color="#06b6d4" style="background:#06b6d4" title="Cyan"></button>
+                            <p class="setting-sub">Get your key from <a href="https://openrouter.ai/keys" target="_blank" class="setting-link">OpenRouter</a>. Required for Trinity Large, Step 3.5 Flash and Seedream.</p>
                         </div>
                     </div>
 
-                    <div class="setting-card">
-                        <div class="setting-card-label">
-                            <i data-lucide="layout"></i>
-                            <span>Chat Behaviour</span>
-                        </div>
-
-                        <div class="setting-toggle-row">
-                            <div class="setting-toggle-info">
-                                <div class="setting-toggle-name">Render Markdown</div>
-                                <div class="setting-toggle-sub">Format AI responses with markdown</div>
-                            </div>
-                            <button class="toggle-switch" id="renderMarkdownToggle">
-                                <div class="toggle-knob"></div>
-                            </button>
-                        </div>
-
-                        <div class="setting-toggle-row">
-                            <div class="setting-toggle-info">
-                                <div class="setting-toggle-name">Enter Sends Message</div>
-                                <div class="setting-toggle-sub">Off: use Ctrl+Enter to send</div>
-                            </div>
-                            <button class="toggle-switch" id="sendOnEnterToggle">
-                                <div class="toggle-knob"></div>
-                            </button>
-                        </div>
-
-                        <div class="setting-toggle-row">
-                            <div class="setting-toggle-info">
-                                <div class="setting-toggle-name">Show Timestamps</div>
-                                <div class="setting-toggle-sub">Display time on each message</div>
-                            </div>
-                            <button class="toggle-switch" id="showTimestampsToggle">
-                                <div class="toggle-knob"></div>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="setting-card setting-card-danger">
-                        <div class="setting-card-label">
-                            <i data-lucide="alert-triangle"></i>
-                            <span>Danger Zone</span>
-                        </div>
-                        <button class="btn-danger" id="wipeMemoryBtn">
-                            <i data-lucide="trash-2"></i> Wipe All Memory
+                    <!-- System Identity -->
+                    <div class="acc-item">
+                        <button class="acc-header" type="button">
+                            <span class="acc-header-inner"><i data-lucide="cpu"></i><span>System Identity</span></span>
+                            <i data-lucide="chevron-down" class="acc-chevron"></i>
                         </button>
+                        <div class="acc-body">
+                            <textarea id="systemPromptInput" class="system-textarea" placeholder="Describe how the AI should behave…" rows="3"></textarea>
+                            <button class="btn-save-prompt" id="saveSystemPromptBtn">
+                                <i data-lucide="check"></i> Save Prompt
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- AI Behaviour -->
+                    <div class="acc-item">
+                        <button class="acc-header" type="button">
+                            <span class="acc-header-inner"><i data-lucide="brain"></i><span>AI Behaviour</span></span>
+                            <i data-lucide="chevron-down" class="acc-chevron"></i>
+                        </button>
+                        <div class="acc-body">
+                            <div class="setting-inline-row">
+                                <label class="setting-inline-label">Response Style</label>
+                                <div class="ui-select-wrap" id="responseStyleSelect">
+                                    <button class="ui-select-trigger" type="button">
+                                        <span class="ui-select-value">Professional</span>
+                                        <i data-lucide="chevron-down"></i>
+                                    </button>
+                                    <div class="ui-select-panel">
+                                        <div class="ui-select-option active" data-value="professional">Professional</div>
+                                        <div class="ui-select-option" data-value="friendly">Friendly</div>
+                                        <div class="ui-select-option" data-value="nerdy">Nerdy</div>
+                                        <div class="ui-select-option" data-value="sincere">Sincere</div>
+                                        <div class="ui-select-option" data-value="concise">Concise</div>
+                                        <div class="ui-select-option" data-value="socratic">Socratic</div>
+                                        <div class="ui-select-option" data-value="stoic">Stoic</div>
+                                        <div class="ui-select-option" data-value="poetic">Poetic</div>
+                                        <div class="ui-select-option" data-value="analytical">Analytical</div>
+                                        <div class="ui-select-option" data-value="humorous">Humorous</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="setting-inline-row">
+                                <label class="setting-inline-label">Emoji Usage</label>
+                                <div class="ui-select-wrap" id="emojiLevelSelect">
+                                    <button class="ui-select-trigger" type="button">
+                                        <span class="ui-select-value">No Emojis</span>
+                                        <i data-lucide="chevron-down"></i>
+                                    </button>
+                                    <div class="ui-select-panel">
+                                        <div class="ui-select-option active" data-value="none">No Emojis</div>
+                                        <div class="ui-select-option" data-value="less">Fewer Emojis</div>
+                                        <div class="ui-select-option" data-value="more">More Emojis</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="setting-toggle-row">
+                                <div class="setting-toggle-info">
+                                    <div class="setting-toggle-name">Script Comments</div>
+                                    <div class="setting-toggle-sub">Include comments in generated code</div>
+                                </div>
+                                <button class="toggle-switch" id="scriptCommentsToggle">
+                                    <div class="toggle-knob"></div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Appearance -->
+                    <div class="acc-item">
+                        <button class="acc-header" type="button">
+                            <span class="acc-header-inner"><i data-lucide="palette"></i><span>Appearance</span></span>
+                            <i data-lucide="chevron-down" class="acc-chevron"></i>
+                        </button>
+                        <div class="acc-body">
+                            <div class="setting-inline-row">
+                                <label class="setting-inline-label">Theme</label>
+                                <div class="ui-select-wrap" id="themeSelect">
+                                    <button class="ui-select-trigger" type="button">
+                                        <span class="ui-select-value">Dark</span>
+                                        <i data-lucide="chevron-down"></i>
+                                    </button>
+                                    <div class="ui-select-panel">
+                                        <div class="ui-select-option active" data-value="dark">Dark</div>
+                                        <div class="ui-select-option" data-value="light">Light</div>
+                                        <div class="ui-select-option" data-value="auto">Auto (by time)</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="setting-inline-row">
+                                <label class="setting-inline-label">Chat Font</label>
+                                <div class="ui-select-wrap" id="chatFontSelect">
+                                    <button class="ui-select-trigger" type="button">
+                                        <span class="ui-select-value">Plus Jakarta Sans</span>
+                                        <i data-lucide="chevron-down"></i>
+                                    </button>
+                                    <div class="ui-select-panel">
+                                        <div class="ui-select-option active" data-value="Plus Jakarta Sans">Plus Jakarta Sans</div>
+                                        <div class="ui-select-option" data-value="Inter">Inter</div>
+                                        <div class="ui-select-option" data-value="DM Sans">DM Sans</div>
+                                        <div class="ui-select-option" data-value="IBM Plex Sans">IBM Plex Sans</div>
+                                        <div class="ui-select-option" data-value="Nunito">Nunito</div>
+                                        <div class="ui-select-option" data-value="Lato">Lato</div>
+                                        <div class="ui-select-option" data-value="Source Sans 3">Source Sans 3</div>
+                                        <div class="ui-select-option" data-value="Outfit">Outfit</div>
+                                        <div class="ui-select-option" data-value="Raleway">Raleway</div>
+                                        <div class="ui-select-option" data-value="Manrope">Manrope</div>
+                                        <div class="ui-select-option" data-value="Open Sans">Open Sans</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="setting-inline-row">
+                                <label class="setting-inline-label">Font Size</label>
+                                <div class="ui-select-wrap" id="fontSizeSelect">
+                                    <button class="ui-select-trigger" type="button">
+                                        <span class="ui-select-value">Medium</span>
+                                        <i data-lucide="chevron-down"></i>
+                                    </button>
+                                    <div class="ui-select-panel">
+                                        <div class="ui-select-option" data-value="sm">Small</div>
+                                        <div class="ui-select-option active" data-value="md">Medium</div>
+                                        <div class="ui-select-option" data-value="lg">Large</div>
+                                        <div class="ui-select-option" data-value="xl">X-Large</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="setting-inline-row">
+                                <label class="setting-inline-label">Response Effect</label>
+                                <div class="ui-select-wrap" id="effectSelect">
+                                    <button class="ui-select-trigger" type="button">
+                                        <span class="ui-select-value">Fade</span>
+                                        <i data-lucide="chevron-down"></i>
+                                    </button>
+                                    <div class="ui-select-panel">
+                                        <div class="ui-select-option" data-value="none">None</div>
+                                        <div class="ui-select-option active" data-value="fade-in">Fade In</div>
+                                        <div class="ui-select-option" data-value="slide-up">Slide Up</div>
+                                        <div class="ui-select-option" data-value="scale-in">Scale In</div>
+                                        <div class="ui-select-option" data-value="blur-in">Blur In</div>
+                                        <div class="ui-select-option" data-value="glitch">Glitch</div>
+                                        <div class="ui-select-option" data-value="bounce">Bounce</div>
+                                        <div class="ui-select-option" data-value="typewriter">Typewriter</div>
+                                        <div class="ui-select-option" data-value="wipe">Wipe</div>
+                                        <div class="ui-select-option" data-value="flip">Flip</div>
+                                        <div class="ui-select-option" data-value="rise">Rise</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="setting-toggle-row">
+                                <div class="setting-toggle-info">
+                                    <div class="setting-toggle-name">Compact Mode</div>
+                                    <div class="setting-toggle-sub">Reduce message spacing</div>
+                                </div>
+                                <button class="toggle-switch" id="compactModeToggle">
+                                    <div class="toggle-knob"></div>
+                                </button>
+                            </div>
+
+                            <div class="accent-row">
+                                <label class="setting-inline-label">Accent Color</label>
+                                <div class="accent-controls">
+                                    <input type="color" id="accentColorInput" class="accent-swatch" value="#ffffff">
+                                    <input type="text"  id="accentColorHex"   class="accent-hex"   value="#ffffff" maxlength="7" spellcheck="false">
+                                    <button class="btn-save-prompt accent-save" id="saveAccentBtn"><i data-lucide="check"></i></button>
+                                    <button class="btn-save-prompt accent-reset" id="resetAccentBtn" title="Reset to white"><i data-lucide="rotate-ccw"></i></button>
+                                </div>
+                            </div>
+                            <div class="accent-presets">
+                                <button class="accent-preset" data-color="#ffffff" style="background:#ffffff" title="White"></button>
+                                <button class="accent-preset" data-color="#3b82f6" style="background:#3b82f6" title="Blue"></button>
+                                <button class="accent-preset" data-color="#8b5cf6" style="background:#8b5cf6" title="Purple"></button>
+                                <button class="accent-preset" data-color="#22c55e" style="background:#22c55e" title="Green"></button>
+                                <button class="accent-preset" data-color="#f59e0b" style="background:#f59e0b" title="Amber"></button>
+                                <button class="accent-preset" data-color="#ef4444" style="background:#ef4444" title="Red"></button>
+                                <button class="accent-preset" data-color="#ec4899" style="background:#ec4899" title="Pink"></button>
+                                <button class="accent-preset" data-color="#06b6d4" style="background:#06b6d4" title="Cyan"></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Behaviour -->
+                    <div class="acc-item">
+                        <button class="acc-header" type="button">
+                            <span class="acc-header-inner"><i data-lucide="layout"></i><span>Chat Behaviour</span></span>
+                            <i data-lucide="chevron-down" class="acc-chevron"></i>
+                        </button>
+                        <div class="acc-body">
+                            <div class="setting-toggle-row">
+                                <div class="setting-toggle-info">
+                                    <div class="setting-toggle-name">Render Markdown</div>
+                                    <div class="setting-toggle-sub">Format AI responses with markdown</div>
+                                </div>
+                                <button class="toggle-switch" id="renderMarkdownToggle">
+                                    <div class="toggle-knob"></div>
+                                </button>
+                            </div>
+                            <div class="setting-toggle-row">
+                                <div class="setting-toggle-info">
+                                    <div class="setting-toggle-name">Enter Sends Message</div>
+                                    <div class="setting-toggle-sub">Off: use Ctrl+Enter to send</div>
+                                </div>
+                                <button class="toggle-switch" id="sendOnEnterToggle">
+                                    <div class="toggle-knob"></div>
+                                </button>
+                            </div>
+                            <div class="setting-toggle-row">
+                                <div class="setting-toggle-info">
+                                    <div class="setting-toggle-name">Show Timestamps</div>
+                                    <div class="setting-toggle-sub">Display time on each message</div>
+                                </div>
+                                <button class="toggle-switch" id="showTimestampsToggle">
+                                    <div class="toggle-knob"></div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Language -->
+                    <div class="acc-item">
+                        <button class="acc-header" type="button">
+                            <span class="acc-header-inner"><i data-lucide="globe"></i><span>Language</span></span>
+                            <i data-lucide="chevron-down" class="acc-chevron"></i>
+                        </button>
+                        <div class="acc-body">
+                            <div class="setting-inline-row">
+                                <label class="setting-inline-label">Interface Language</label>
+                                <div class="ui-select-wrap" id="languageSelect">
+                                    <button class="ui-select-trigger" type="button">
+                                        <span class="ui-select-value">English</span>
+                                        <i data-lucide="chevron-down"></i>
+                                    </button>
+                                    <div class="ui-select-panel">
+                                        <div class="ui-select-option active" data-value="en">English</div>
+                                        <div class="ui-select-option" data-value="nl">Nederlands (Dutch)</div>
+                                        <div class="ui-select-option" data-value="de">Deutsch (German)</div>
+                                        <div class="ui-select-option" data-value="es">Español (Spanish)</div>
+                                        <div class="ui-select-option" data-value="fr">Français (French)</div>
+                                        <div class="ui-select-option" data-value="pt">Português (Portuguese)</div>
+                                        <div class="ui-select-option" data-value="zh">中文 (Chinese)</div>
+                                        <div class="ui-select-option" data-value="ja">日本語 (Japanese)</div>
+                                        <div class="ui-select-option" data-value="ar">العربية (Arabic)</div>
+                                        <div class="ui-select-option" data-value="hi">हिन्दी (Hindi)</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="setting-sub">Changes the language of UI messages and toasts. Reload the page after changing for full effect.</p>
+                        </div>
+                    </div>
+
+                    <!-- Danger Zone -->
+                    <div class="acc-item acc-item-danger">
+                        <button class="acc-header" type="button">
+                            <span class="acc-header-inner"><i data-lucide="alert-triangle"></i><span>Danger Zone</span></span>
+                            <i data-lucide="chevron-down" class="acc-chevron"></i>
+                        </button>
+                        <div class="acc-body">
+                            <button class="btn-danger" id="wipeMemoryBtn">
+                                <i data-lucide="trash-2"></i> Wipe All Memory
+                            </button>
+                        </div>
                     </div>
 
                 </div>
